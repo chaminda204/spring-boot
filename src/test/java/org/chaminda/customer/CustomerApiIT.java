@@ -2,6 +2,7 @@ package org.chaminda.customer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -28,7 +29,7 @@ public class CustomerApiIT extends BaseIntegrationTest<Customer> {
 	}
 
 	@Test
-	public void shouldRetrieveCustomerForGivenId() {
+	public void shouldRetrieveCustomerById() {
 		// given
 		Customer customer = getNewCustomer();
 		Customer savedCustomer = postEntity("/customer/add", Customer.class, customer);
@@ -53,7 +54,22 @@ public class CustomerApiIT extends BaseIntegrationTest<Customer> {
 
 		// then
 		assertNotNull(response);
-		//assertTrue(response.contains(customer));
+		// assertTrue(response.contains(customer));
+	}
+
+	@Test
+	public void shouldDeleteCustomer() {
+		// given
+		Customer customer = getNewCustomer();
+		Customer savedCustomer = postEntity("/customer/add", Customer.class, customer);
+		Map<String, String> vars = Collections.singletonMap("customerId", savedCustomer.getId() + "");
+
+		// when
+		deleteEntity("/customer/{customerId}",  vars);
+		Customer response = getEntity("/customer/{customerId}", Customer.class, vars);
+		// then
+		assertNull(response);
+
 	}
 
 	private Customer getNewCustomer() {

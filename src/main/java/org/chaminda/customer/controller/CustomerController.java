@@ -18,7 +18,7 @@ public class CustomerController {
 	@Autowired
 	private CustomerService customerService;
 
-	@RequestMapping(value="/add" , method = RequestMethod.POST, consumes="application/json")
+	@RequestMapping(value = "/add", method = RequestMethod.POST, consumes = "application/json")
 	Customer add(@RequestBody Customer input) {
 
 		return customerService.saveOrUpdateCustomer(input);
@@ -29,12 +29,15 @@ public class CustomerController {
 	List<Customer> findAllCustomers() {
 		return customerService.findAllCustomers();
 	}
-	
+
 	@RequestMapping(value = "/{customerId}", method = RequestMethod.GET)
-	Customer findById(@PathVariable Long customerId){
+	Customer findById(@PathVariable Long customerId) {
 		return customerService.findByCustomerId(customerId);
 	}
-	
-	
+
+	@RequestMapping(method = RequestMethod.DELETE, value = "{/{customerId}")
+	public void delete(@PathVariable Long customerId) {
+		customerService.deleteCustomer(customerId);
+	}
 
 }

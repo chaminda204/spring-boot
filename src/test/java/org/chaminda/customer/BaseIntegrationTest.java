@@ -10,11 +10,9 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
@@ -28,8 +26,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public abstract class BaseIntegrationTest<T> {
 
 	private static final String BASE_URL = "http://localhost:";
-	
+
 	private static final Logger LOGGER = Logger.getLogger(BaseIntegrationTest.class.getName());
+	
+	final RestTemplate restTemplate = new RestTemplate();
 
 	@Value("${local.server.port}")
 	private int port;
@@ -39,22 +39,20 @@ public abstract class BaseIntegrationTest<T> {
 	}
 
 	protected T getEntity(final String requestMappingUrl, final Class<T> serviceReturnTypeClass) {
-		final RestTemplate restTemplate = new RestTemplate();
-
+		T response = null;
+		
 		try {
+			response = restTemplate.getForObject(getBaseUrl() + requestMappingUrl, serviceReturnTypeClass);
 
-			final ResponseEntity<T> response = restTemplate.getForEntity(getBaseUrl() + requestMappingUrl, serviceReturnTypeClass);
-
-			return response.getBody();
 		} catch (final Exception ex) {
 			LOGGER.log(Level.SEVERE, "Error occured while calling the API " + ex.getMessage());
 		}
-		return null;
+		return response;
 	}
-	
+
 	protected T getEntity(final String requestMappingUrl, final Class<T> serviceReturnTypeClass, final Map<String, String> vars) {
-		final RestTemplate restTemplate = new RestTemplate();
 		T response = null;
+		
 		try {
 			response = restTemplate.getForObject(getBaseUrl() + requestMappingUrl, serviceReturnTypeClass, vars);
 
@@ -63,36 +61,44 @@ public abstract class BaseIntegrationTest<T> {
 		}
 		return response;
 	}
-	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	protected Collection<T> getList(final String requestMappingUrl) {
 
+
+	@SuppressWarnings("unchecked")
+	protected Collection<T> getList(final String requestMappingUrl) {
+		Collection<T> response = null;
+		
 		try {
-			final RestTemplate restTemplate = new TestRestTemplate();
-			
-			final ResponseEntity<List> response = restTemplate.getForEntity(getBaseUrl() + requestMappingUrl, List.class);
-			return response.getBody();
+			 response = restTemplate.getForObject(getBaseUrl() + requestMappingUrl, List.class);
+
 		} catch (final Exception ex) {
 			LOGGER.log(Level.SEVERE, "Error occured while calling the API " + ex.getMessage());
 		}
-		return null;
+		return response;
 	}
 
 	protected T postEntity(final String requestMappingUrl, final Class<T> serviceReturnClazz, final Object postObject) {
-		T responseEntity = null;
-		final TestRestTemplate restTemplate = new TestRestTemplate();
 		final ObjectMapper mapper = new ObjectMapper();
-
+		T responseEntity = null;
+		
 		try {
 			final HttpHeaders headers = new HttpHeaders();
 			headers.setContentType(MediaType.APPLICATION_JSON);
 			final HttpEntity<String> entity = new HttpEntity<>(mapper.writeValueAsString(postObject), headers);
-			final ResponseEntity<T> response = restTemplate.postForEntity(getBaseUrl() + requestMappingUrl, entity, serviceReturnClazz);
+			responseEntity = restTemplate.postForObject(getBaseUrl() + requestMappingUrl, entity, serviceReturnClazz);
 
-			responseEntity = response.getBody();
 		} catch (final Exception ex) {
 			LOGGER.log(Level.SEVERE, "Error occured while calling the API " + ex.getMessage());
 		}
 		return responseEntity;
+	}
+	
+	protected void deleteEntity(final String requestMappingUrl, final Map<String, String> vars){
+		
+		try {
+			restTemplate.delete(getBaseUrl() + requestMappingUrl, vars);
+		} catch (Exception ex) {
+			LOGGER.log(Level.SEVERE, "Error occured while calling the API " + ex.getMessage());
+		}
+		
 	}
 }

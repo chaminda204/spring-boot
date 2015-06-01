@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.HttpEntity;
@@ -92,13 +93,20 @@ public abstract class BaseIntegrationTest<T> {
 		return responseEntity;
 	}
 	
-	protected void deleteEntity(final String requestMappingUrl, final Map<String, String> vars){
-		
+	protected void deleteEntity(final String requestMappingUrl, final Long vars){
+		final HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+	    headers.add("custom", true + "");
+	    final HttpEntity<String> entity = new HttpEntity<>(String.valueOf(vars), headers);
+
+
 		try {
-			restTemplate.delete(getBaseUrl() + requestMappingUrl, vars);
+			
+			restTemplate.delete(getBaseUrl() + requestMappingUrl, entity);
 		} catch (Exception ex) {
 			LOGGER.log(Level.SEVERE, "Error occured while calling the API " + ex.getMessage());
 		}
 		
 	}
 }
+

@@ -65,7 +65,7 @@ public class CustomerApiIT extends BaseIntegrationTest<Customer> {
 		Map<String, String> vars = Collections.singletonMap("customerId", savedCustomer.getId() + "");
 
 		// when
-		deleteEntity("/customer/{customerId}",  vars);
+		deleteEntity("/customer/{customerId}",  savedCustomer.getId());
 		Customer response = getEntity("/customer/{customerId}", Customer.class, vars);
 		// then
 		assertNull(response);
